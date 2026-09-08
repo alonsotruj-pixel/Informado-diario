@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0b1020" />
+  <title>Informed Diario — MVP1</title>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --panel: #ffffff;
+      --text: #121826;
+      --muted: #6b7280;
+      --line: #e5e7eb;
+      --brand: #0b1020;
+      --accent: #315efb;
+      --success: #16a34a;
+      --warn: #d97706;
+      --danger: #dc2626;
+      --chip: #eef2ff;
+      --shadow: 0 10px 30px rgba(15, 23, 42, .08);
+      --radius: 18px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+    button, select { font: inherit; }
+    .app-shell { min-height: 100vh; display: grid; grid-template-columns: 240px 1fr; }
+    .sidebar {
+      background: var(--brand);
+      color: white;
+      padding: 28px 18px;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+    }
+    .brand { font-weight: 800; letter-spacing: -.02em; font-size: 1.2rem; margin-bottom: 28px; }
+    .brand small { display:block; color:#98a2b3; font-weight:500; font-size:.72rem; margin-top:4px; }
+    .nav-btn {
+      width: 100%;
+      background: transparent;
+      color: #d0d5dd;
+      border: 0;
+      padding: 11px 12px;
+      text-align: left;
+      border-radius: 12px;
+      cursor: pointer;
+      margin: 2px 0;
+    }
+    .nav-btn.active, .nav-btn:hover { background: rgba(255,255,255,.09); color: white; }
+    .main { padding: 26px 30px 80px; max-width: 1500px; width:100%; margin:0 auto; }
+    .topbar { display:flex; justify-content:space-between; gap:16px; align-items:flex-start; margin-bottom:20px; }
+    h1 { margin:0; font-size:2rem; letter-spacing:-.04em; }
+    .subtitle { color:var(--muted); margin-top:6px; }
+    .source-pill {
+      border:1px solid var(--line); background:var(--panel); border-radius:999px;
+      padding:9px 12px; cursor:pointer; box-shadow:0 2px 10px rgba(15,23,42,.03);
+      white-space:nowrap;
+    }
+    .dot { width:8px; height:8px; border-radius:50%; display:inline-block; margin-right:6px; }
+    .green { background:var(--success); } .yellow { background:var(--warn); } .red { background:var(--danger); }
+    .filters { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:22px; }
+    .chip {
+      border:1px solid var(--line); background:var(--panel); border-radius:999px; padding:8px 11px;
+      cursor:pointer; color:#344054;
+    }
+    .chip.active { background:var(--brand); color:white; border-color:var(--brand); }
+    .section-title { display:flex; justify-content:space-between; align-items:end; margin:24px 0 12px; }
+    .section-title h2 { margin:0; font-size:1rem; letter-spacing:.01em; }
+    .section-title span { color:var(--muted); font-size:.84rem; }
+    .hero-grid { display:grid; grid-template-columns:2fr 1fr; gap:16px; }
+    .feed { display:grid; gap:12px; }
+    .card {
+      background:var(--panel); border:1px solid var(--line); border-radius:var(--radius);
+      padding:18px; box-shadow:0 4px 16px rgba(15,23,42,.035);
+    }
+    .story { cursor:pointer; transition:.15s ease; }
+    .story:hover { transform:translateY(-1px); box-shadow:var(--shadow); }
+    .story-top { display:flex; justify-content:space-between; gap:12px; align-items:flex-start; }
+    .badge {
+      display:inline-flex; align-items:center; gap:6px; background:#fff3e8; color:#9a3412;
+      border-radius:999px; padding:5px 8px; font-size:.75rem; font-weight:700;
+    }
+    .badge.must { background:#fff1f2; color:#be123c; }
+    .badge.relevant { background:#eff6ff; color:#1d4ed8; }
+    .badge.watch { background:#fffbeb; color:#b45309; }
+    .score { font-weight:800; font-size:.9rem; }
+    .story h3 { margin:10px 0 8px; font-size:1.06rem; line-height:1.35; }
+    .meta { color:var(--muted); font-size:.8rem; margin-bottom:10px; }
+    .summary { color:#344054; line-height:1.5; margin:0 0 12px; }
+    .angles { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:12px; }
+    .angle { border:1px solid var(--line); border-radius:12px; padding:10px; font-size:.78rem; }
+    .angle strong { display:block; font-size:.72rem; color:var(--muted); margin-bottom:4px; text-transform:uppercase; }
+    .app-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
+    .world {
+      background:var(--panel); border:1px solid var(--line); border-radius:16px; padding:16px;
+      cursor:pointer; min-height:120px; transition:.15s ease;
+    }
+    .world:hover { transform:translateY(-2px); box-shadow:var(--shadow); }
+    .world-icon { font-size:1.8rem; }
+    .world-name { font-weight:800; margin-top:10px; }
+    .world-meta { color:var(--muted); font-size:.78rem; margin-top:6px; }
+    .panel-title { font-size:.92rem; font-weight:800; margin-bottom:12px; }
+    .status-row { display:flex; align-items:center; justify-content:space-between; padding:9px 0; border-bottom:1px solid var(--line); font-size:.84rem; }
+    .status-row:last-child { border-bottom:0; }
+    .status-label { display:flex; align-items:center; gap:6px; }
+    .coverage { font-size:2rem; font-weight:900; letter-spacing:-.04em; }
+    .muted { color:var(--muted); }
+    .drawer {
+      position:fixed; inset:0; background:rgba(2,6,23,.44); display:none; z-index:30; align-items:flex-end; justify-content:flex-end;
+    }
+    .drawer.open { display:flex; }
+    .drawer-panel {
+      width:min(520px,100%); height:100%; background:white; padding:22px; overflow:auto;
+      box-shadow:-16px 0 40px rgba(2,6,23,.16);
+    }
+    .drawer-close { float:right; border:0; background:#f2f4f7; border-radius:10px; padding:8px 11px; cursor:pointer; }
+    .drawer h2 { margin:0 0 20px; }
+    .source-item { padding:13px 0; border-bottom:1px solid var(--line); }
+    .source-item strong { display:block; }
+    .source-item small { color:var(--muted); }
+    .world-view { display:none; }
+    .world-header { display:flex; align-items:center; gap:12px; margin-bottom:16px; }
+    .back-btn { border:0; background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:8px 10px; cursor:pointer; }
+    .pillar-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+    .pillar { background:var(--panel); border:1px solid var(--line); border-radius:16px; padding:16px; }
+    .pillar h3 { margin:0 0 6px; }
+    .pillar p { margin:0; color:var(--muted); font-size:.82rem; line-height:1.4; }
+    .mobile-nav {
+      display:none; position:fixed; bottom:0; left:0; right:0; background:white;
+      border-top:1px solid var(--line); z-index:20; padding:7px 8px max(7px, env(safe-area-inset-bottom));
+      grid-template-columns:repeat(5,1fr);
+    }
+    .mobile-nav button { border:0; background:transparent; padding:8px 4px; font-size:.72rem; color:var(--muted); }
+    .mobile-nav button strong { display:block; font-size:1.05rem; }
+    .desktop-side-card { margin-top:26px; padding:14px; border:1px solid rgba(255,255,255,.1); border-radius:14px; color:#d0d5dd; font-size:.78rem; }
+    .desktop-side-card strong { color:white; display:block; margin-bottom:4px; }
+    @media (max-width: 1050px) {
+      .app-grid { grid-template-columns:repeat(3,1fr); }
+      .hero-grid { grid-template-columns:1fr; }
+    }
+    @media (max-width: 760px) {
+      .app-shell { grid-template-columns:1fr; }
+      .sidebar { display:none; }
+      .main { padding:18px 14px 88px; }
+      .topbar { align-items:center; }
+      h1 { font-size:1.6rem; }
+      .subtitle { font-size:.86rem; }
+      .app-grid { grid-template-columns:repeat(2,1fr); }
+      .angles { grid-template-columns:1fr; }
+      .pillar-grid { grid-template-columns:1fr; }
+      .mobile-nav { display:grid; }
+      .source-pill { padding:8px 10px; font-size:.78rem; }
+      .drawer-panel { height:88%; border-radius:20px 20px 0 0; }
+      .drawer { align-items:flex-end; }
+    }
+  </style>
+</head>
+<body>
+<div class="app-shell">
+  <aside class="sidebar">
+    <div class="brand">Informed Diario<small>Executive Intelligence MVP1</small></div>
+    <button class="nav-btn active" onclick="showHome()">⭐ Today</button>
+    <button class="nav-btn" onclick="openWorld('Payments')">💳 Payments</button>
+    <button class="nav-btn" onclick="openWorld('Banks')">🏦 Banks</button>
+    <button class="nav-btn" onclick="openWorld('Fintechs')">🚀 Fintechs</button>
+    <button class="nav-btn" onclick="openWorld('AI & Tech')">🤖 AI & Tech</button>
+    <button class="nav-btn" onclick="openWorld('Regulation')">⚖️ Regulation</button>
+    <button class="nav-btn" onclick="openWorld('Fraud, Risk & Cyber')">🛡️ Fraud & Risk</button>
+    <button class="nav-btn" onclick="openWorld('Transaction Banking')">💰 Transaction Banking</button>
+    <button class="nav-btn" onclick="openWorld('Economy & Markets')">📈 Economy & Markets</button>
+    <button class="nav-btn" onclick="openWorld('Digital Money & Assets')">🪙 Digital Money</button>
+    <button class="nav-btn" onclick="openWorld('Corporate Strategy & M&A')">🏢 Corporate Strategy</button>
+    <button class="nav-btn" onclick="openWorld('Leadership & Management')">💼 Leadership</button>
+
+    <div class="desktop-side-card">
+      <strong>Source coverage</strong>
+      28 active · 2 delayed<br/>
+      Canada / US / Mexico / Chile
+    </div>
+  </aside>
+
+  <main class="main">
+    <section id="homeView">
+      <div class="topbar">
+        <div>
+          <h1>Today</h1>
+          <div class="subtitle">What matters today — ranked by executive impact.</div>
+        </div>
+        <button class="source-pill" onclick="openSources()"><span class="dot green"></span> Sources · 28 active</button>
+      </div>
+
+      <div class="filters" id="worldFilters"></div>
+      <div class="filters">
+        <button class="chip active" onclick="setRange(this,'Today')">Today</button>
+        <button class="chip" onclick="setRange(this,'7 Days')">7 Days</button>
+        <button class="chip" onclick="setRange(this,'30 Days')">30 Days</button>
+        <button class="chip" onclick="setRegion(this,'All regions')">All regions</button>
+        <button class="chip" onclick="setRegion(this,'Canada')">🇨🇦 Canada</button>
+        <button class="chip" onclick="setRegion(this,'US')">🇺🇸 US</button>
+        <button class="chip" onclick="setRegion(this,'Mexico')">🇲🇽 Mexico</button>
+        <button class="chip" onclick="setRegion(this,'Chile')">🇨🇱 Chile</button>
+      </div>
+
+      <div class="hero-grid">
+        <div>
+          <div class="section-title"><h2>🔥 Must know</h2><span id="contextLabel">All worlds · Today</span></div>
+          <div class="feed" id="storyFeed"></div>
+        </div>
+        <div>
+          <div class="section-title"><h2>Source health</h2><span>live status</span></div>
+          <div class="card">
+            <div class="status-row"><span class="status-label"><span class="dot green"></span> Reuters</span><span class="muted">4m</span></div>
+            <div class="status-row"><span class="status-label"><span class="dot green"></span> WSJ</span><span class="muted">12m</span></div>
+            <div class="status-row"><span class="status-label"><span class="dot green"></span> SWIFT</span><span class="muted">28m</span></div>
+            <div class="status-row"><span class="status-label"><span class="dot green"></span> BIS / CPMI</span><span class="muted">2h</span></div>
+            <div class="status-row"><span class="status-label"><span class="dot yellow"></span> JPM Payments</span><span class="muted">6h</span></div>
+          </div>
+
+          <div class="section-title"><h2>Coverage</h2><span>prototype</span></div>
+          <div class="card">
+            <div class="coverage">84%</div>
+            <div class="muted">Overall source coverage</div>
+            <div style="height:10px"></div>
+            <div class="status-row"><span>Payments</span><strong>92%</strong></div>
+            <div class="status-row"><span>Banks</span><strong>86%</strong></div>
+            <div class="status-row"><span>Fintechs</span><strong>79%</strong></div>
+            <div class="status-row"><span>AI & Tech</span><strong>76%</strong></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-title"><h2>Explore worlds</h2><span>tap to drill down</span></div>
+      <div class="app-grid" id="worldGrid"></div>
+    </section>
+
+    <section id="worldView" class="world-view">
+      <div class="world-header">
+        <button class="back-btn" onclick="showHome()">← Today</button>
+        <div>
+          <h1 id="worldTitle">Payments</h1>
+          <div class="subtitle" id="worldSubtitle">3 pillars · source-connected intelligence</div>
+        </div>
+      </div>
+      <div class="pillar-grid" id="pillarGrid"></div>
+      <div class="section-title"><h2>Latest intelligence</h2><span>demo feed</span></div>
+      <div class="feed" id="worldStories"></div>
+    </section>
+  </main>
+</div>
+
+<nav class="mobile-nav">
+  <button onclick="showHome()"><strong>⭐</strong>Today</button>
+  <button onclick="openWorld('Payments')"><strong>💳</strong>Payments</button>
+  <button onclick="openSources()"><strong>🛰️</strong>Sources</button>
+  <button onclick="alert('Saved is planned for MVP1.1')"><strong>🔖</strong>Saved</button>
+  <button onclick="alert('Ask AI is planned for MVP1.1')"><strong>✨</strong>AI</button>
+</nav>
+
+<div class="drawer" id="sourceDrawer" onclick="drawerBackdrop(event)">
+  <div class="drawer-panel">
+    <button class="drawer-close" onclick="closeSources()">✕</button>
+    <h2>Source status</h2>
+    <div class="subtitle" style="margin-bottom:16px">Connected sources, ingestion method and last sync.</div>
+    <div id="sourceList"></div>
+  </div>
+</div>
+
+<script>
+const worlds = {
+  "Payments": { icon:"💳", pillars:["Infrastructure","Strategy","Operations"] },
+  "Banks": { icon:"🏦", pillars:["Business & Products","Strategy & Transformation","Performance & Moves"] },
+  "Fintechs": { icon:"🚀", pillars:["Products & Innovation","Growth & Strategy","Funding / M&A"] },
+  "AI & Tech": { icon:"🤖", pillars:["Technology","Use Cases","Business Impact"] },
+  "Regulation": { icon:"⚖️", pillars:["New Rules","Industry Impact","Implementation"] },
+  "Fraud, Risk & Cyber": { icon:"🛡️", pillars:["Fraud Trends","Financial Crime / AML","Cyber & Authentication"] },
+  "Transaction Banking": { icon:"💰", pillars:["Cash Management","Liquidity / Working Capital","Trade & Corporate Solutions"] },
+  "Economy & Markets": { icon:"📈", pillars:["Macro & Rates","FX / Markets","Banking Impact"] },
+  "Digital Money & Assets": { icon:"🪙", pillars:["Stablecoins / CBDCs","Tokenization","Institutional Adoption"] },
+  "Corporate Strategy & M&A": { icon:"🏢", pillars:["M&A","Partnerships / Expansion","Organizational Moves"] },
+  "Leadership & Management": { icon:"💼", pillars:["Operating Models","Productivity / Transformation","Leadership"] }
+};
+
+const sources = [
+  ["Reuters","Executive news","API / licensed feed","Active","4 min ago"],
+  ["WSJ","Executive news","Official / subscription link","Active","12 min ago"],
+  ["Financial Times","Executive news","Official / subscription link","Active","18 min ago"],
+  ["Bloomberg","Executive news","Licensed / official","Active","22 min ago"],
+  ["BIS / CPMI","Primary authority","RSS / official","Active","2 hours ago"],
+  ["SWIFT","Primary / industry","RSS / official","Active","28 min ago"],
+  ["Payments Canada","Primary authority","Official feed","Active","36 min ago"],
+  ["Bank of Canada","Primary authority","Official feed","Active","55 min ago"],
+  ["Federal Reserve / FedNow","Primary authority","Official feed","Active","44 min ago"],
+  ["JPMorgan Payments","Industry insight","Official feed","Delayed","6 hours ago"],
+  ["Mastercard","Primary / industry","Official feed","Active","1 hour ago"],
+  ["Visa","Primary / industry","Official feed","Active","1 hour ago"],
+  ["Finextra","Specialist media","RSS","Active","19 min ago"],
+  ["The Paypers","Specialist media","RSS","Active","33 min ago"],
+  ["Payments Dive","Specialist media","RSS","Active","48 min ago"],
+  ["McKinsey","Strategic research","Official feed","Active","3 hours ago"],
+  ["BCG","Strategic research","Official feed","Active","4 hours ago"]
+];
+
+const stories = [
+  {world:"Payments", region:["US","Canada"], tier:"must", score:91, title:"Real-time payments infrastructure update reshapes bank roadmap priorities", source:"Federal Reserve / industry sources", age:"18m", summary:"A material infrastructure change could affect investment sequencing, interoperability and cross-border strategy.", financial:"Cost ↓ / Revenue opportunity ↑", decision:"Review RTP roadmap and investment priorities", your:"High relevance to US; watch spillover to Canada/Mexico"},
+  {world:"Banks", region:["Canada"], tier:"must", score:88, title:"Major Canadian bank announces operating-model transformation", source:"Reuters / company IR", age:"42m", summary:"Transformation program points to efficiency, technology and organizational changes with potential industry benchmarking value.", financial:"Cost base ↓", decision:"Benchmark target operating model", your:"Direct Canada relevance"},
+  {world:"Fintechs", region:["US","Mexico"], tier:"relevant", score:77, title:"Fintech expands B2B cross-border capabilities across North America", source:"Fintech company / specialist media", age:"1h", summary:"Expansion increases competitive pressure in corporate payments and could influence bank partnership strategy.", financial:"Revenue pressure / opportunity", decision:"Assess partner-vs-build implications", your:"Relevant to US–Mexico corridor"},
+  {world:"Regulation", region:["Canada"], tier:"relevant", score:75, title:"Canadian regulator publishes implementation guidance affecting financial institutions", source:"Official regulator", age:"2h", summary:"New implementation expectations could create compliance and operational work for regulated institutions.", financial:"Compliance cost ↑", decision:"Validate implementation readiness", your:"High Canada relevance"},
+  {world:"AI & Tech", region:["US","Canada","Mexico"], tier:"watch", score:63, title:"Banks expand generative-AI use in payment investigations", source:"Industry research", age:"3h", summary:"AI use is moving from pilots toward operational workflows in investigations and exception handling.", financial:"Productivity ↑ / Cost ↓", decision:"Consider use cases for operations automation", your:"Strong fit with payments operations"}
+];
+
+let selectedWorld = "All";
+let selectedRange = "Today";
+let selectedRegion = "All regions";
+
+function renderWorldFilters() {
+  const el = document.getElementById("worldFilters");
+  el.innerHTML = '<button class="chip active" data-world="All" onclick="setWorld(this,\'All\')">All worlds</button>' +
+    Object.entries(worlds).map(([name,w]) => `<button class="chip" data-world="${name}" onclick="setWorld(this,'${name.replaceAll("'","\\'")}')">${w.icon} ${name}</button>`).join("");
+}
+function renderWorldGrid() {
+  const el = document.getElementById("worldGrid");
+  el.innerHTML = Object.entries(worlds).map(([name,w],i)=>`
+    <div class="world" onclick="openWorld('${name.replaceAll("'","\\'")}')">
+      <div class="world-icon">${w.icon}</div>
+      <div class="world-name">${name}</div>
+      <div class="world-meta">${w.pillars.length} pillars · ${i%3+1} new today</div>
+    </div>`).join("");
+}
+function storyCard(s) {
+  const label = s.tier === "must" ? "🔥 MUST KNOW" : s.tier === "relevant" ? "🎯 RELEVANT" : "👀 WORTH WATCHING";
+  return `<article class="card story">
+    <div class="story-top"><span class="badge ${s.tier}">${label}</span><span class="score">${s.score}/100</span></div>
+    <h3>${s.title}</h3>
+    <div class="meta">${s.source} · ${s.age} · ${s.world}</div>
+    <p class="summary">${s.summary}</p>
+    <div class="angles">
+      <div class="angle"><strong>Financial impact</strong>${s.financial}</div>
+      <div class="angle"><strong>Decision angle</strong>${s.decision}</div>
+      <div class="angle"><strong>Your angle</strong>${s.your}</div>
+    </div>
+  </article>`;
+}
+function renderStories() {
+  let filtered = stories.filter(s => (selectedWorld==="All" || s.world===selectedWorld) &&
+    (selectedRegion==="All regions" || s.region.includes(selectedRegion)));
+  document.getElementById("storyFeed").innerHTML = filtered.length ? filtered.map(storyCard).join("") :
+    `<div class="card"><strong>No high-impact items in this filter.</strong><div class="muted" style="margin-top:6px">Try another world or region.</div></div>`;
+  document.getElementById("contextLabel").textContent = `${selectedWorld==="All" ? "All worlds" : selectedWorld} · ${selectedRange}${selectedRegion!=="All regions" ? " · "+selectedRegion : ""}`;
+}
+function setWorld(btn, world) {
+  selectedWorld = world;
+  [...document.querySelectorAll("#worldFilters .chip")].forEach(x=>x.classList.remove("active"));
+  btn.classList.add("active");
+  renderStories();
+}
+function setRange(btn, range) {
+  selectedRange = range;
+  [...btn.parentElement.querySelectorAll(".chip")].slice(0,3).forEach(x=>x.classList.remove("active"));
+  btn.classList.add("active");
+  renderStories();
+}
+function setRegion(btn, region) {
+  selectedRegion = region;
+  const siblings = [...btn.parentElement.querySelectorAll(".chip")];
+  siblings.slice(3).forEach(x=>x.classList.remove("active"));
+  btn.classList.add("active");
+  renderStories();
+}
+function openWorld(name) {
+  const w = worlds[name];
+  document.getElementById("homeView").style.display="none";
+  document.getElementById("worldView").style.display="block";
+  document.getElementById("worldTitle").textContent = `${w.icon} ${name}`;
+  document.getElementById("pillarGrid").innerHTML = w.pillars.map((p,i)=>`
+    <div class="pillar"><h3>${p}</h3><p>${["Primary sources + executive news + strategic research","Ranked by financial, decision and strategic impact","Region-aware relevance for Canada, US, Mexico and Chile"][i]}</p></div>`).join("");
+  const ws = stories.filter(s=>s.world===name);
+  document.getElementById("worldStories").innerHTML = ws.length ? ws.map(storyCard).join("") :
+    `<div class="card"><strong>No demo stories loaded yet.</strong><div class="muted" style="margin-top:6px">Live ingestion will populate this world in MVP1.1.</div></div>`;
+  window.scrollTo({top:0, behavior:"smooth"});
+}
+function showHome() {
+  document.getElementById("worldView").style.display="none";
+  document.getElementById("homeView").style.display="block";
+  window.scrollTo({top:0, behavior:"smooth"});
+}
+function openSources() {
+  document.getElementById("sourceDrawer").classList.add("open");
+}
+function closeSources() {
+  document.getElementById("sourceDrawer").classList.remove("open");
+}
+function drawerBackdrop(e) {
+  if(e.target.id==="sourceDrawer") closeSources();
+}
+function renderSources() {
+  document.getElementById("sourceList").innerHTML = sources.map(([name,tier,method,status,last]) => `
+    <div class="source-item">
+      <div style="display:flex;justify-content:space-between;gap:10px">
+        <strong><span class="dot ${status==="Active"?"green":"yellow"}"></span>${name}</strong>
+        <span class="muted">${status}</span>
+      </div>
+      <small>${tier} · ${method} · last sync ${last}</small>
+    </div>`).join("");
+}
+
+renderWorldFilters();
+renderWorldGrid();
+renderStories();
+renderSources();
+</script>
+</body>
+</html>
