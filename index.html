@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0c1124" />
+  <meta
+    name="description"
+    content="Informado: a focused daily dashboard for Payments strategy, infrastructure, operations and market context."
+  />
+  <title>Informado · Payments Intelligence</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="app">
+    <header class="hero">
+      <div>
+        <h1>Informado</h1>
+        <p>Payments intelligence for strategy, infrastructure, operations and market context.</p>
+      </div>
+
+      <div id="sourceStatus" class="source-pill" aria-live="polite">
+        <span class="status-dot"></span>
+        Sources · connecting…
+      </div>
+    </header>
+
+    <section class="filters" aria-label="Dashboard filters">
+      <div class="select-grid">
+        <label class="select-wrap">
+          <span class="sr-only">Topic</span>
+          <select id="topicSelect">
+            <option value="all">All topics</option>
+            <option value="payments" selected>Payments</option>
+            <option value="banks">Banks</option>
+            <option value="fintech">Fintechs</option>
+            <option value="ai">AI &amp; Tech</option>
+            <option value="regulation">Regulation</option>
+            <option value="risk">Fraud, Risk &amp; Cyber</option>
+            <option value="transaction-banking">Transaction Banking</option>
+            <option value="markets">Economy &amp; Markets</option>
+            <option value="digital-assets">Digital Money &amp; Assets</option>
+            <option value="strategy">Corporate Strategy &amp; M&amp;A</option>
+            <option value="leadership">Leadership &amp; Management</option>
+          </select>
+        </label>
+
+        <label class="select-wrap">
+          <span class="sr-only">Region</span>
+          <select id="regionSelect">
+            <option value="all" selected>All regions</option>
+            <option value="canada">Canada</option>
+            <option value="us">United States</option>
+            <option value="mexico">Mexico</option>
+            <option value="chile">Chile</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="period-tabs" role="group" aria-label="Period">
+        <button class="period-btn active" data-period="today" type="button">Today</button>
+        <button class="period-btn" data-period="7d" type="button">7 Days</button>
+        <button class="period-btn" data-period="30d" type="button">30 Days</button>
+      </div>
+    </section>
+
+    <section class="section-block" id="top">
+      <div class="section-title-row">
+        <h2>Must know</h2>
+        <span id="contextLabel">Payments · Today</span>
+      </div>
+      <div id="mustKnowList" class="card-stack"></div>
+    </section>
+
+    <section class="section-block" id="strategy">
+      <div class="section-title-row">
+        <h2>Strategy</h2>
+        <span>Business models · competition · partnerships</span>
+      </div>
+      <div id="strategyList" class="card-stack compact"></div>
+    </section>
+
+    <section class="section-block" id="infrastructure">
+      <div class="section-title-row">
+        <h2>Infrastructure</h2>
+        <span>Rails · clearing · settlement · messaging</span>
+      </div>
+      <div id="infrastructureList" class="card-stack compact"></div>
+    </section>
+
+    <section class="section-block" id="operations">
+      <div class="section-title-row">
+        <h2>Operations</h2>
+        <span>STP · exceptions · risk · servicing</span>
+      </div>
+      <div id="operationsList" class="card-stack compact"></div>
+    </section>
+
+    <section class="section-block bottom-space" id="watching">
+      <div class="section-title-row">
+        <h2>Watching</h2>
+        <span>Relevant signals that do not fit the sections above</span>
+      </div>
+      <div id="watchingList" class="card-stack compact"></div>
+    </section>
+  </main>
+
+  <nav class="bottom-nav" aria-label="Dashboard sections">
+    <button class="nav-item active" type="button" data-target="top" aria-label="Must know">
+      <strong>🔥</strong><span>Top</span>
+    </button>
+    <button class="nav-item" type="button" data-target="strategy" aria-label="Strategy">
+      <strong>↗</strong><span>Strategy</span>
+    </button>
+    <button class="nav-item" type="button" data-target="infrastructure" aria-label="Infrastructure">
+      <strong>⚙</strong><span>Infra</span>
+    </button>
+    <button class="nav-item" type="button" data-target="operations" aria-label="Operations">
+      <strong>✓</strong><span>Ops</span>
+    </button>
+  </nav>
+
+  <script src="app.js" defer></script>
+</body>
+</html>
