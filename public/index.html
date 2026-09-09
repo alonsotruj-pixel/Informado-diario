@@ -1,1 +1,192 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0c1124" />
+  <meta
+    name="description"
+    content="Informado: an executive daily briefing with global context and a Payments specialization."
+  />
+  <title>Informado · Executive Intelligence</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="app">
+    <header class="hero">
+      <div>
+        <h1>Informado</h1>
+        <p>Executive intelligence with global context and a Payments specialization.</p>
+      </div>
 
+      <div class="source-menu-wrap">
+        <button
+          id="sourceStatus"
+          class="source-pill"
+          type="button"
+          aria-haspopup="true"
+          aria-expanded="false"
+          aria-controls="sourcePanel"
+        >
+          <span class="status-dot"></span>
+          <span id="sourceStatusText">Sources · connecting…</span>
+          <span class="chevron">⌄</span>
+        </button>
+
+        <div id="sourcePanel" class="source-panel" hidden>
+          <div class="source-panel-head">
+            <div>
+              <strong>Sources</strong>
+              <span id="sourceUpdated">Checking connections…</span>
+            </div>
+            <button id="closeSources" class="icon-btn" type="button" aria-label="Close sources">×</button>
+          </div>
+          <div id="sourceList" class="source-list"></div>
+          <div class="source-legend">
+            <span><i class="legend-dot active"></i> Active</span>
+            <span><i class="legend-dot partial"></i> Partial</span>
+            <span><i class="legend-dot error"></i> Unavailable</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <section class="filters" aria-label="Dashboard filters">
+      <div class="select-grid">
+        <label class="select-wrap">
+          <span class="sr-only">Topic</span>
+          <select id="topicSelect">
+            <option value="all" selected>All topics</option>
+            <option value="payments">Payments</option>
+            <option value="banks">Banks</option>
+            <option value="fintech">Fintechs</option>
+            <option value="ai">AI &amp; Tech</option>
+            <option value="regulation">Regulation</option>
+            <option value="risk">Fraud, Risk &amp; Cyber</option>
+            <option value="transaction-banking">Transaction Banking</option>
+            <option value="markets">Economy &amp; Markets</option>
+            <option value="digital-assets">Digital Money &amp; Assets</option>
+            <option value="strategy">Corporate Strategy &amp; M&amp;A</option>
+            <option value="business">Business &amp; Companies</option>
+            <option value="world">World &amp; Geopolitics</option>
+            <option value="leadership">Leadership &amp; Management</option>
+          </select>
+        </label>
+
+        <label class="select-wrap">
+          <span class="sr-only">Region</span>
+          <select id="regionSelect">
+            <option value="all" selected>All regions</option>
+            <option value="canada">Canada</option>
+            <option value="us">United States</option>
+            <option value="mexico">Mexico</option>
+            <option value="chile">Chile</option>
+            <option value="latam">Latin America</option>
+            <option value="europe">Europe</option>
+            <option value="asia">Asia</option>
+          </select>
+        </label>
+
+        <label class="select-wrap">
+          <span class="sr-only">Content type</span>
+          <select id="contentTypeSelect">
+            <option value="all" selected>All content</option>
+            <option value="news">News</option>
+            <option value="official">Official</option>
+            <option value="report">Reports</option>
+            <option value="insight">Insights</option>
+            <option value="update">Updates</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="period-tabs" role="group" aria-label="Period">
+        <button class="period-btn active" data-period="today" type="button">Today</button>
+        <button class="period-btn" data-period="7d" type="button">7 Days</button>
+        <button class="period-btn" data-period="30d" type="button">30 Days</button>
+      </div>
+    </section>
+
+    <section class="section-block" id="top">
+      <div class="section-title-row">
+        <div>
+          <h2>Must know</h2>
+          <p class="section-kicker">The highest-impact stories across all active sources.</p>
+        </div>
+        <span id="contextLabel">All topics · Today</span>
+      </div>
+      <div id="mustKnowList" class="card-stack"></div>
+    </section>
+
+    <section class="section-block" id="payments">
+      <div class="section-title-row">
+        <div>
+          <h2>Payments</h2>
+          <p class="section-kicker">Industry moves · competitors · cross-border · digital money</p>
+        </div>
+      </div>
+      <div id="paymentsList" class="card-stack compact"></div>
+    </section>
+
+    <section class="section-block" id="strategy">
+      <div class="section-title-row">
+        <div>
+          <h2>Strategy</h2>
+          <p class="section-kicker">Business models · competition · M&amp;A · partnerships</p>
+        </div>
+      </div>
+      <div id="strategyList" class="card-stack compact"></div>
+    </section>
+
+    <section class="section-block" id="infrastructure">
+      <div class="section-title-row">
+        <div>
+          <h2>Infrastructure</h2>
+          <p class="section-kicker">Rails · clearing · settlement · messaging · standards</p>
+        </div>
+      </div>
+      <div id="infrastructureList" class="card-stack compact"></div>
+    </section>
+
+    <section class="section-block" id="operations">
+      <div class="section-title-row">
+        <div>
+          <h2>Operations</h2>
+          <p class="section-kicker">STP · exceptions · fraud · cyber · resilience · servicing</p>
+        </div>
+      </div>
+      <div id="operationsList" class="card-stack compact"></div>
+    </section>
+
+    <section class="section-block bottom-space" id="watching">
+      <div class="section-title-row">
+        <div>
+          <h2>Watching</h2>
+          <p class="section-kicker">Macro, technology and global signals worth keeping on the radar.</p>
+        </div>
+      </div>
+      <div id="watchingList" class="card-stack compact"></div>
+    </section>
+  </main>
+
+  <nav class="bottom-nav" aria-label="Dashboard sections">
+    <button class="nav-item active" type="button" data-target="top" aria-label="Must know">
+      <strong>🔥</strong><span>Top</span>
+    </button>
+    <button class="nav-item" type="button" data-target="payments" aria-label="Payments">
+      <strong>💳</strong><span>Payments</span>
+    </button>
+    <button class="nav-item" type="button" data-target="strategy" aria-label="Strategy">
+      <strong>↗</strong><span>Strategy</span>
+    </button>
+    <button class="nav-item" type="button" data-target="infrastructure" aria-label="Infrastructure">
+      <strong>⚙</strong><span>Infra</span>
+    </button>
+    <button class="nav-item" type="button" data-target="operations" aria-label="Operations">
+      <strong>✓</strong><span>Ops</span>
+    </button>
+  </nav>
+
+  <script src="app.js" defer></script>
+</body>
+</html>
