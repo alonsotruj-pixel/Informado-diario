@@ -10,8 +10,10 @@ const sourceList = document.getElementById("sourceList");
 const sourceUpdated = document.getElementById("sourceUpdated");
 const closeSources = document.getElementById("closeSources");
 const navItems = document.querySelectorAll(".nav-item");
+const paymentPillarButtons = document.querySelectorAll(".payment-pill");
 
 let selectedPeriod = "today";
+let selectedPaymentPillar = "all";
 let stories = [];
 let sourceMeta = null;
 
@@ -43,8 +45,8 @@ const contentTypeLabels = {
 
 const periodLabels = {
   today: "Today",
-  "7d": "7 Days",
-  "30d": "30 Days"
+  "7d": "7-day catch-up",
+  "30d": "30-day catch-up"
 };
 
 const topicKeywords = {
@@ -176,61 +178,71 @@ function recencyLabel(dateString) {
 function executiveScore(story, topics) {
   const text = textFor(story);
   const hours = ageHours(story.pubDate);
-  let score = 45 + (tierBonus[story.sourceTier] || 0);
 
-  if (hours <= 3) score += 20;
-  else if (hours <= 12) score += 17;
-  else if (hours <= 24) score += 14;
-  else if (hours <= 72) score += 9;
-  else if (hours <= 168) score += 5;
+  // 1) Source quality: max 20
+  let sourceScore = story.sourceTier === "T1" ? 18 : story.sourceTier === "T2" ? 12 : 8;
+  if (story.sourceKind === "primary") sourceScore += 2;
+  sourceScore = Math.min(20, sourceScore);
 
+  // 2) Recency: max 20
+  let recencyScore = 0;
+  if (hours <= 3) recencyScore = 20;
+  else if (hours <= 12) recencyScore = 17;
+  else if (hours <= 24) recencyScore = 14;
+  else if (hours <= 72) recencyScore = 10;
+  else if (hours <= 168) recencyScore = 6;
+  else if (hours <= 24 * 30) recencyScore = 2;
+
+  // 3) Executive impact: max 30
   const highImpactTerms = [
-    "federal reserve", "interest rate", "inflation", "tariff", "sanctions",
-    "visa", "mastercard", "jpmorgan", "bank of america", "citigroup",
-    "paypal", "stripe", "swift", "stablecoin", "regulation", "regulator",
-    "acquisition", "merger", "billion", "launch", "settlement",
-    "real-time payment", "fraud", "cyber", "iso 20022", "cross-border",
-    "liquidity", "recession", "oil", "war", "central bank"
+    "interest rate", "inflation", "tariff", "trade war", "sanction", "war",
+    "oil", "recession", "central bank", "acquisition", "merger", "billion",
+    "stablecoin", "fraud", "cyber", "regulation", "regulator", "cross-border",
+    "settlement", "real-time payment", "instant payment", "iso 20022", "swift",
+    "bank charter", "liquidity", "visa", "mastercard", "jpmorgan"
   ];
+  const impactHits = highImpactTerms.filter(term => text.includes(term)).length;
+  const impactScore = Math.min(30, impactHits * 5);
 
-  score += Math.min(16, highImpactTerms.filter(term => text.includes(term)).length * 2);
+  // 4) Relevance to Informado: max 20
+  let relevanceScore = 0;
+  if (topics.includes("payments")) relevanceScore += 8;
+  if (topics.includes("markets") || topics.includes("world")) relevanceScore += 4;
+  if (topics.includes("regulation") || topics.includes("risk")) relevanceScore += 4;
+  if (topics.includes("banks") || topics.includes("transaction-banking") || topics.includes("digital-assets")) relevanceScore += 3;
+  if (topics.includes("strategy") || topics.includes("business") || topics.includes("ai")) relevanceScore += 2;
+  relevanceScore = Math.min(20, relevanceScore);
 
-  if (topics.includes("payments")) score += 5;
-  if (topics.includes("strategy")) score += 3;
-  if (topics.includes("regulation") || topics.includes("risk")) score += 3;
-  if (topics.includes("markets") || topics.includes("world")) score += 2;
+  // 5) Corroboration: max 10
+  const corroboration = Number(story.corroboration || 1);
+  const corroborationScore = corroboration >= 3 ? 10 : corroboration === 2 ? 6 : 0;
 
-  if (story.sourceKind === "primary") score += 2;
-  score += Math.min(8, Math.max(0, Number(story.corroboration || 1) - 1) * 2);
+  // De-prioritize formats that are usually less urgent for the daily brief.
+  const noisePenalty = /\bopinion\b|\bpodcast\b|\btranscript\b|\bcareer\b|\bjob\b/.test(text) ? 8 : 0;
 
-  if (["Reuters", "The Wall Street Journal", "Financial Times", "Bloomberg"].includes(story.feedName)) {
-    score += 3;
-  }
-
-  return Math.min(99, Math.round(score));
+  return Math.max(0, Math.min(100, Math.round(
+    sourceScore + recencyScore + impactScore + relevanceScore + corroborationScore - noisePenalty
+  )));
 }
 
-function classifySection(story, topics) {
+function classifyPaymentPillar(story, topics) {
+  if (!topics.includes("payments")) return null;
+
   const text = textFor(story);
 
-  if (
-    topics.includes("strategy") ||
-    /\bacquisition\b|\bmerger\b|\bpartnership\b|\bdeal\b|\brestructur|\bdivest|\bexpansion\b|\bstake\b/.test(text)
-  ) return "strategy";
+  if (/operations|operational|outage|fraud|compliance|sanctions|cyber|exception|reconciliation|investigation|resilience|servicing|stp/.test(text)) {
+    return "operations";
+  }
 
-  if (
-    topics.includes("payments") &&
-    /infrastructure|network|rail|clearing|settlement|swift|fednow|rtp|iso 20022|platform|liquidity|messaging|correspondent|ledger|instant payment/.test(text)
-  ) return "infrastructure";
+  if (/infrastructure|network|rail|clearing|settlement|swift|fednow|rtp|iso 20022|liquidity|messaging|correspondent|ledger|interoperability|instant payment/.test(text)) {
+    return "infrastructure";
+  }
 
-  if (
-    topics.includes("risk") ||
-    /operations|operational|outage|fraud|compliance|sanctions|cyber|exception|reconciliation|investigation|resilience/.test(text)
-  ) return "operations";
+  if (/acquisition|acquire|merger|m&a|partnership|joint venture|strategy|restructur|divest|expansion|stake|investment|business model|competitive/.test(text)) {
+    return "strategy";
+  }
 
-  if (topics.includes("payments")) return "payments";
-
-  return "watching";
+  return "general";
 }
 
 function enrichStory(item) {
@@ -243,16 +255,22 @@ function enrichStory(item) {
     topics,
     regions,
     score,
-    section: classifySection(item, topics),
+    section: topics.includes("payments") ? "payments" : "watching",
+    paymentPillar: classifyPaymentPillar(item, topics),
     age: recencyLabel(item.pubDate)
   };
 }
 
 function periodMatches(story) {
   const hours = ageHours(story.pubDate);
+
+  // Distinct catch-up windows:
+  // Today: latest 30 hours
+  // 7 Days: older than Today, up to 7 days
+  // 30 Days: older than 7 days, up to 30 days
   if (selectedPeriod === "today") return hours <= 30;
-  if (selectedPeriod === "7d") return hours <= 24 * 7;
-  return hours <= 24 * 30;
+  if (selectedPeriod === "7d") return hours > 30 && hours <= 24 * 7;
+  return hours > 24 * 7 && hours <= 24 * 30;
 }
 
 function storyMatches(story) {
@@ -325,10 +343,13 @@ function angleFor(story) {
 }
 
 function decisionFor(story) {
-  if (story.section === "infrastructure") return "Review roadmap dependencies and sequencing.";
-  if (story.section === "operations") return "Assess controls, process and execution exposure.";
-  if (story.section === "strategy") return "Revisit competitive and investment assumptions.";
-  if (story.section === "payments") return "Assess product, client and network implications.";
+  if (story.section === "payments") {
+    if (story.paymentPillar === "infrastructure") return "Review Payments roadmap dependencies and sequencing.";
+    if (story.paymentPillar === "operations") return "Assess Payments controls, process and execution exposure.";
+    if (story.paymentPillar === "strategy") return "Revisit Payments competitive and investment assumptions.";
+    return "Assess product, client and network implications for Payments.";
+  }
+
   return "Determine whether this needs deeper follow-up.";
 }
 
@@ -348,7 +369,7 @@ function mainCard(story) {
           ${contentBadge(story)}
           <span class="must-badge">🔥 MUST KNOW</span>
         </div>
-        <span class="score">${story.score}/100</span>
+        <span class="score">Priority ${story.score}/100</span>
       </div>
 
       <h3>
@@ -389,7 +410,7 @@ function compactCard(story) {
           ${contentBadge(story)}
           <span class="meta">${escapeHtml(story.feedName)} · ${escapeHtml(story.age)}</span>
         </div>
-        <span class="score">${story.score}</span>
+        <span class="score">Priority ${story.score}/100</span>
       </div>
 
       <h3>
@@ -433,6 +454,31 @@ function renderMustKnow() {
   container.innerHTML = filtered.map(mainCard).join("");
 }
 
+function renderPayments() {
+  const container = document.getElementById("paymentsList");
+
+  if (!stories.length) {
+    container.innerHTML = `<div class="empty-state loading">Loading live sources…</div>`;
+    return;
+  }
+
+  let filtered = getFilteredStories()
+    .filter(story => story.section === "payments");
+
+  if (selectedPaymentPillar !== "all") {
+    filtered = filtered.filter(story => story.paymentPillar === selectedPaymentPillar);
+  }
+
+  filtered = filtered.slice(0, 10);
+
+  if (!filtered.length) {
+    container.innerHTML = `<div class="empty-state">No Payments items matched this pillar and filter.</div>`;
+    return;
+  }
+
+  container.innerHTML = filtered.map(compactCard).join("");
+}
+
 function renderSection(section, elementId) {
   const container = document.getElementById(elementId);
 
@@ -443,7 +489,7 @@ function renderSection(section, elementId) {
 
   const filtered = getFilteredStories()
     .filter(story => story.section === section)
-    .slice(0, 8);
+    .slice(0, 10);
 
   if (!filtered.length) {
     container.innerHTML = `<div class="empty-state">No items matched this section and filter.</div>`;
@@ -536,10 +582,7 @@ function render() {
   contextLabel.textContent = parts.join(" · ");
 
   renderMustKnow();
-  renderSection("payments", "paymentsList");
-  renderSection("strategy", "strategyList");
-  renderSection("infrastructure", "infrastructureList");
-  renderSection("operations", "operationsList");
+  renderPayments();
   renderSection("watching", "watchingList");
   updateSourceStatus();
 }
@@ -577,13 +620,10 @@ async function loadNews() {
     [
       "mustKnowList",
       "paymentsList",
-      "strategyList",
-      "infrastructureList",
-      "operationsList",
       "watchingList"
     ].forEach(id => {
       document.getElementById(id).innerHTML =
-        `<div class="empty-state">Could not load the live sources. Check the Netlify Function deployment and try again.</div>`;
+        `<div class="empty-state">Could not load the live sources. Please refresh and try again.</div>`;
     });
 
     renderSourcePanel();
@@ -621,6 +661,15 @@ periodButtons.forEach(button => {
     button.classList.add("active");
     selectedPeriod = button.dataset.period;
     render();
+  });
+});
+
+paymentPillarButtons.forEach(button => {
+  button.addEventListener("click", () => {
+    paymentPillarButtons.forEach(btn => btn.classList.remove("active"));
+    button.classList.add("active");
+    selectedPaymentPillar = button.dataset.pillar;
+    renderPayments();
   });
 });
 

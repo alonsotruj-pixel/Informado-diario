@@ -9,7 +9,7 @@
     content="Informado: an executive daily briefing with global context and a Payments specialization."
   />
   <title>Informado · Executive Intelligence</title>
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="styles.css?v=5" />
 </head>
 <body>
   <main class="app">
@@ -115,6 +115,10 @@
         </div>
         <span id="contextLabel">All topics · Today</span>
       </div>
+      <details class="score-help">
+        <summary>How the priority score works</summary>
+        <p>0–100 priority score based on source quality (20), recency (20), executive impact (30), relevance to this dashboard (20) and corroboration (10). It measures reading priority — not factual confidence or article quality.</p>
+      </details>
       <div id="mustKnowList" class="card-stack"></div>
     </section>
 
@@ -122,47 +126,25 @@
       <div class="section-title-row">
         <div>
           <h2>Payments</h2>
-          <p class="section-kicker">Industry moves · competitors · cross-border · digital money</p>
+          <p class="section-kicker">Your specialization. Filter Payments through the three pillars below.</p>
         </div>
       </div>
+
+      <div class="payment-tabs" role="group" aria-label="Payments pillars">
+        <button class="payment-pill active" type="button" data-pillar="all">All</button>
+        <button class="payment-pill" type="button" data-pillar="strategy">Strategy</button>
+        <button class="payment-pill" type="button" data-pillar="infrastructure">Infrastructure</button>
+        <button class="payment-pill" type="button" data-pillar="operations">Operations</button>
+      </div>
+
       <div id="paymentsList" class="card-stack compact"></div>
-    </section>
-
-    <section class="section-block" id="strategy">
-      <div class="section-title-row">
-        <div>
-          <h2>Strategy</h2>
-          <p class="section-kicker">Business models · competition · M&amp;A · partnerships</p>
-        </div>
-      </div>
-      <div id="strategyList" class="card-stack compact"></div>
-    </section>
-
-    <section class="section-block" id="infrastructure">
-      <div class="section-title-row">
-        <div>
-          <h2>Infrastructure</h2>
-          <p class="section-kicker">Rails · clearing · settlement · messaging · standards</p>
-        </div>
-      </div>
-      <div id="infrastructureList" class="card-stack compact"></div>
-    </section>
-
-    <section class="section-block" id="operations">
-      <div class="section-title-row">
-        <div>
-          <h2>Operations</h2>
-          <p class="section-kicker">STP · exceptions · fraud · cyber · resilience · servicing</p>
-        </div>
-      </div>
-      <div id="operationsList" class="card-stack compact"></div>
     </section>
 
     <section class="section-block bottom-space" id="watching">
       <div class="section-title-row">
         <div>
-          <h2>Watching</h2>
-          <p class="section-kicker">Macro, technology and global signals worth keeping on the radar.</p>
+          <h2>Global context</h2>
+          <p class="section-kicker">Economy, markets, technology, business and geopolitics outside the Payments specialization.</p>
         </div>
       </div>
       <div id="watchingList" class="card-stack compact"></div>
@@ -176,17 +158,11 @@
     <button class="nav-item" type="button" data-target="payments" aria-label="Payments">
       <strong>💳</strong><span>Payments</span>
     </button>
-    <button class="nav-item" type="button" data-target="strategy" aria-label="Strategy">
-      <strong>↗</strong><span>Strategy</span>
-    </button>
-    <button class="nav-item" type="button" data-target="infrastructure" aria-label="Infrastructure">
-      <strong>⚙</strong><span>Infra</span>
-    </button>
-    <button class="nav-item" type="button" data-target="operations" aria-label="Operations">
-      <strong>✓</strong><span>Ops</span>
+    <button class="nav-item" type="button" data-target="watching" aria-label="Global context">
+      <strong>◉</strong><span>Context</span>
     </button>
   </nav>
 
-  <script src="app.js" defer></script>
+  <script src="app.js?v=5" defer></script>
 </body>
 </html>
