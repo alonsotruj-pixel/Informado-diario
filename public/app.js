@@ -319,17 +319,188 @@ function contentBadge(story) {
 }
 
 function sourceMetaLine(story) {
+  const tierLabel =
+    story.sourceTier === "T1" ? "Tier 1" :
+    story.sourceTier === "T2" ? "Tier 2" :
+    story.sourceTier || "";
+
+  const sourceRole =
+    story.sourceKind === "primary"
+      ? "Official"
+      : story.sourceTier === "T2"
+        ? "Specialist"
+        : "News";
+
   const parts = [
     story.feedName,
-    story.sourceTier,
-    story.sourceKind === "primary" ? "Primary source" : "Media",
+    tierLabel,
+    sourceRole,
     story.age
   ];
 
-  if (story.linkMode === "indexed") parts.push("Indexed headline");
+  if (story.linkMode === "indexed") parts.push("Headline");
   if (Number(story.corroboration || 1) > 1) parts.push(`${story.corroboration} sources`);
 
   return parts.filter(Boolean).map(escapeHtml).join(" · ");
+}
+
+function plainSourceText(value = "") {
+  return cleanText(
+    String(value)
+      .replace(/<[^>]*>/g, " ")
+      .replace(/&nbsp;/gi, " ")
+      .replace(/&amp;/gi, "&")
+      .replace(/&quot;/gi, '"')
+      .replace(/&#39;|&apos;|&rsquo;/gi, "'")
+      .replace(/&ldquo;|&rdquo;/gi, '"')
+      .replace(/&ndash;/gi, "–")
+      .replace(/&mdash;/gi, "—")
+  );
+}
+
+function smartTrim(text, maxLength = 340) {
+  const value = cleanText(text);
+  if (value.length <= maxLength) return value;
+
+  const clipped = value.slice(0, maxLength + 1);
+  const lastSentence = Math.max(
+    clipped.lastIndexOf(". "),
+    clipped.lastIndexOf("! "),
+    clipped.lastIndexOf("? ")
+  );
+
+  if (lastSentence > maxLength * 0.55) {
+    return clipped.slice(0, lastSentence + 1).trim();
+  }
+
+  const lastSpace = clipped.lastIndexOf(" ");
+  return `${clipped.slice(0, lastSpace > 0 ? lastSpace : maxLength).trim()}…`;
+}
+
+function headlineTakeaway(story) {
+  if (story.section === "payments") {
+    if (story.paymentPillar === "infrastructure") {
+      return "Headline-only signal: a Payments infrastructure development that may affect rails, settlement, messaging or interoperability. Open the source for full context.";
+    }
+
+    if (story.paymentPillar === "operations") {
+      return "Headline-only signal: a Payments operations development with potential implications for controls, resilience, fraud or execution. Open the source for full context.";
+    }
+
+    if (story.paymentPillar === "strategy") {
+      return "Headline-only signal: a Payments strategy development that may affect competitive positioning, partnerships or investment priorities. Open the source for full context.";
+    }
+
+    return "Headline-only signal: a Payments development ranked for executive attention. Open the source for full context.";
+  }
+
+  if (story.topics.includes("markets")) {
+    return "Headline-only signal: a markets or macro development with potential implications for rates, liquidity, valuations or client activity. Open the source for full context.";
+  }
+
+  if (story.topics.includes("world")) {
+    return "Headline-only signal: a geopolitical development that may create second-order effects for markets, trade or financial institutions. Open the source for full context.";
+  }
+
+  if (story.topics.includes("ai")) {
+    return "Headline-only signal: a technology or AI development that may affect investment, competition or operating models. Open the source for full context.";
+  }
+
+  if (story.topics.includes("strategy") || story.topics.includes("business")) {
+    return "Headline-only signal: a corporate development with possible competitive, investment or industry implications. Open the source for full context.";
+  }
+
+  return "Headline-only signal ranked for executive attention. Open the source for the full context and supporting detail.";
+}
+
+function executiveBriefFor(story) {
+  const description = plainSourceText(story.description || "");
+
+  if (description.length >= 45) {
+    return {
+      label: "Executive brief",
+      text: smartTrim(description, 360),
+      headlineOnly: false
+    };
+  }
+
+  return {
+    label: "Executive takeaway",
+    text: headlineTakeaway(story),
+    headlineOnly: true
+  };
+}
+
+function whyItMatters(story) {
+  const text = textFor(story);
+
+  if (/stablecoin|tokenized|tokenised|deposit token|digital dollar|cbdc/.test(text)) {
+    return "Tokenized money is moving closer to mainstream financial infrastructure, with implications for settlement, liquidity, treasury and cross-border payment models.";
+  }
+
+  if (/agentic|ai agent|agentic commerce/.test(text) && story.topics.includes("payments")) {
+    return "Agentic commerce could change how payments are initiated, authenticated and controlled, creating new opportunities as well as fraud and liability questions.";
+  }
+
+  if (/cross-border|remittance|correspondent banking|alipay\+|upi|pix/.test(text) && story.topics.includes("payments")) {
+    return "Cross-border payment economics and interoperability remain major competitive battlegrounds for banks, networks and fintechs.";
+  }
+
+  if (/swift|iso 20022|clearing|settlement|fednow|real-time payment|instant payment|rtp|payment rail/.test(text)) {
+    return "Changes to payment rails or messaging can alter interoperability, liquidity needs, operating processes and the sequencing of bank technology roadmaps.";
+  }
+
+  if (/fraud|cyber|scam|breach|outage|resilience|compliance|sanction/.test(text)) {
+    return "The development may affect control design, fraud losses, compliance obligations or operational resilience.";
+  }
+
+  if (/regulation|regulator|fca|occ|cfpb|rule|law|antitrust/.test(text)) {
+    return "Regulatory change can reshape product economics, compliance requirements and the speed at which financial institutions can execute.";
+  }
+
+  if (/interest rate|inflation|fed|central bank|oil|bond|yield|currency|dollar|recession/.test(text)) {
+    return "Macro and market shifts can change funding costs, liquidity, valuations and transaction activity across financial institutions and clients.";
+  }
+
+  if (/tariff|trade war|war|sanction|geopolit|iran|ukraine|china/.test(text)) {
+    return "Geopolitical shifts can quickly transmit into markets, trade flows, sanctions exposure and financial-institution risk.";
+  }
+
+  if (/acquisition|acquire|merger|m&a|partnership|joint venture|investment|stake|divest/.test(text)) {
+    return "This may change competitive positioning, partnership options or the build-versus-buy assumptions of firms in the sector.";
+  }
+
+  if (/artificial intelligence|openai|anthropic|ai |agentic|automation|chip|semiconductor/.test(text)) {
+    return "The development may influence technology investment, productivity, competitive advantage and future operating models.";
+  }
+
+  if (story.section === "payments") {
+    return "The item may influence Payments strategy, client propositions, infrastructure choices or operating priorities.";
+  }
+
+  return angleFor(story);
+}
+
+function executiveBriefBlock(story) {
+  const brief = executiveBriefFor(story);
+  const why = whyItMatters(story);
+
+  return `
+    <div class="executive-brief ${brief.headlineOnly ? "headline-only" : ""}">
+      <span class="brief-label">${escapeHtml(brief.label)}</span>
+      <p class="brief-text">${escapeHtml(brief.text)}</p>
+    </div>
+
+    <div class="why-desktop">
+      <span class="brief-label">Why it matters</span>
+      <p class="why-text">${escapeHtml(why)}</p>
+    </div>
+
+    <details class="why-mobile">
+      <summary>Why it matters</summary>
+      <p>${escapeHtml(why)}</p>
+    </details>
+  `;
 }
 
 function angleFor(story) {
@@ -380,16 +551,12 @@ function mainCard(story) {
 
       <p class="meta">${sourceMetaLine(story)}</p>
 
-      ${story.description ? `<p class="summary">${escapeHtml(story.description)}</p>` : ""}
+      ${executiveBriefBlock(story)}
 
-      <div class="impact-grid">
+      <div class="impact-grid single">
         <div class="impact-box">
           <strong>Decision angle</strong>
           <span>${escapeHtml(decisionFor(story))}</span>
-        </div>
-        <div class="impact-box">
-          <strong>Your angle</strong>
-          <span>${escapeHtml(angleFor(story))}</span>
         </div>
       </div>
 
@@ -421,7 +588,7 @@ function compactCard(story) {
 
       <p class="meta">${sourceMetaLine(story)}</p>
 
-      ${story.description ? `<p class="summary">${escapeHtml(story.description)}</p>` : ""}
+      ${executiveBriefBlock(story)}
 
       <a class="read-link" href="${url}" target="_blank" rel="noopener noreferrer">
         ${readLabel(story)}
